@@ -5,17 +5,18 @@ import {
 	writeWorkerConfig,
 } from "@cloudflare/build-output-utils";
 import { MAIN_ENTRY_NAME } from "../cloudflare-environment";
+import { resolveDevOnly } from "../plugin-config";
 import { createPlugin } from "../utils";
 import type { ModuleType } from "@cloudflare/config";
 
-/**
- * Build Output Specification plugin. Replaces `outputConfigPlugin` when
- * `experimental.newConfig.cfBuildOutput` is set.
- */
+/** Emits Workers using the Build Output Specification. */
 export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 	return {
 		async writeBundle(_, bundle) {
 			if (ctx.isChildEnvironment(this.environment.name)) {
+				return;
+			}
+			if (ctx.resolvedPluginConfig.type === "preview") {
 				return;
 			}
 
@@ -23,28 +24,22 @@ export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 				ctx.resolvedPluginConfig.type === "assets-only" &&
 				this.environment.name === "client"
 			) {
-				const defaultExport = ctx.resolvedPluginConfig.parsedNewConfig?.default;
-				const workerNewConfig =
-					defaultExport?.type === "worker" ? defaultExport : undefined;
-				assert(
-					workerNewConfig,
-					"Expected a default worker export on assets-only resolved config"
-				);
 				await writeWorkerConfig({
 					root: ctx.resolvedViteConfig.root,
-					config: workerNewConfig,
+					config: ctx.resolvedPluginConfig.config,
 				});
 				await writeSettings();
 				return;
 			}
 
-			// The Build Output Specification currently holds a single Worker in
-			// the `default` directory. Only the entry Worker is emitted;
-			// auxiliary Worker environments are ignored for now.
+			const worker = ctx.resolvedPluginConfig.environmentNameToWorkerMap.get(
+				this.environment.name
+			);
 			if (
-				ctx.resolvedPluginConfig.type === "workers" &&
-				this.environment.name !==
-					ctx.resolvedPluginConfig.entryWorkerEnvironmentName
+				!worker ||
+				resolveDevOnly(worker.devOnly) ||
+				this.environment.name ===
+					ctx.resolvedPluginConfig.prerenderWorkerEnvironmentName
 			) {
 				return;
 			}
@@ -94,6 +89,7 @@ export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 					mainModule: entryChunk.fileName,
 					modules,
 				},
+				workerDirectoryName: worker.directoryName,
 			});
 			await writeSettings();
 		},
@@ -110,9 +106,7 @@ export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 		if (ctx.resolvedPluginConfig.type === "preview") {
 			return;
 		}
-		const settingsExport = ctx.resolvedPluginConfig.parsedNewConfig?.settings;
-		const settings =
-			settingsExport?.type === "settings" ? settingsExport : undefined;
+		const settings = ctx.resolvedPluginConfig.parsedConfig.settings;
 
 		await writeSettingsConfig(
 			ctx.resolvedViteConfig.root,
@@ -122,9 +116,7 @@ export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 	}
 });
 
-/**
- * Map a bundle filename to its declared module type.
- */
+/** Map a bundle filename to its native module type. */
 export function detectModuleType(filename: string): ModuleType {
 	const ext = path.extname(filename).toLowerCase();
 
