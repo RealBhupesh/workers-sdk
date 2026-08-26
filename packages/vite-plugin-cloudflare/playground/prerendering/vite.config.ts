@@ -19,6 +19,12 @@ export function createConfig(assetsOnly: boolean) {
 							name: "prerender",
 							entrypoint: "./src/prerender.ts",
 							compatibilityDate: "2024-12-30",
+							env: {
+								AUXILIARY_WORKER: {
+									type: "worker",
+									worker: "auxiliary-worker",
+								},
+							},
 						},
 					},
 				},

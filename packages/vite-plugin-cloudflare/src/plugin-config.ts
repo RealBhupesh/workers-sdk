@@ -393,7 +393,10 @@ export async function resolvePluginConfig(
 			...shared,
 			remoteBindings,
 			type: "preview",
-			workers: await readBuildOutputWorkers(root),
+			workers: await readBuildOutputWorkers(
+				root,
+				!!process.env.CLOUDFLARE_VITE_BUILD
+			),
 		};
 	}
 

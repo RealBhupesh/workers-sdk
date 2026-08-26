@@ -293,11 +293,6 @@ function forceBuildOutputDirs(
 		environmentName,
 		worker,
 	] of resolvedPluginConfig.environmentNameToWorkerMap) {
-		if (
-			environmentName === resolvedPluginConfig.prerenderWorkerEnvironmentName
-		) {
-			continue;
-		}
 		const environment = resolvedViteConfig.environments[environmentName];
 		if (environment) {
 			environment.build.outDir = getWorkerBundleDir(root, worker.directoryName);

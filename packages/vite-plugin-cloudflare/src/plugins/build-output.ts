@@ -5,6 +5,7 @@ import {
 	writeWorkerConfig,
 } from "@cloudflare/build-output-utils";
 import { MAIN_ENTRY_NAME } from "../cloudflare-environment";
+import { assertIsNotPreview } from "../context";
 import { resolveDevOnly } from "../plugin-config";
 import { createPlugin } from "../utils";
 import type { ModuleType } from "@cloudflare/config";
@@ -13,13 +14,11 @@ import type { ModuleType } from "@cloudflare/config";
 export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 	return {
 		async writeBundle(_, bundle) {
+			assertIsNotPreview(ctx);
+
 			if (ctx.isChildEnvironment(this.environment.name)) {
 				return;
 			}
-			if (ctx.resolvedPluginConfig.type === "preview") {
-				return;
-			}
-
 			if (
 				ctx.resolvedPluginConfig.type === "assets-only" &&
 				this.environment.name === "client"
@@ -35,12 +34,7 @@ export const buildOutputPlugin = createPlugin("build-output", (ctx) => {
 			const worker = ctx.resolvedPluginConfig.environmentNameToWorkerMap.get(
 				this.environment.name
 			);
-			if (
-				!worker ||
-				resolveDevOnly(worker.devOnly) ||
-				this.environment.name ===
-					ctx.resolvedPluginConfig.prerenderWorkerEnvironmentName
-			) {
+			if (!worker || resolveDevOnly(worker.devOnly)) {
 				return;
 			}
 

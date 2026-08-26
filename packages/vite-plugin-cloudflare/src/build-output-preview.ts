@@ -2,6 +2,7 @@ import {
 	DEFAULT_WORKER_DIRECTORY_NAME,
 	readBuildOutput,
 } from "@cloudflare/build-output-utils";
+import { PRERENDER_WORKER_DIRECTORY_NAME } from "./build-output";
 import type { BuildOutputWorker } from "@cloudflare/build-output-utils";
 import type {
 	ModuleType,
@@ -24,27 +25,32 @@ export interface BuildOutputPreviewWorker {
 }
 
 /**
- * Read the Workers from the Build Output Specification for preview. The
- * `default` entry Worker is returned first, followed by auxiliary Workers.
+ * Read the Build Output Specification and select the Workers used for preview.
+ * Every auxiliary Worker is always included. During prerendering, the
+ * `prerender` Worker replaces the `default` entry Worker when present.
  */
 export async function readBuildOutputWorkers(
-	root: string
+	root: string,
+	isPrerender: boolean
 ): Promise<BuildOutputPreviewWorker[]> {
 	// `settings` comes from the top-level `config.json` holding project-level
 	// settings (`account_id`, `compliance_region`) shared by every Worker. It
 	// also carries the `mode` the build ran in.
 	const { workers, settings } = await readBuildOutput(root);
 	const defaultWorker = workers[DEFAULT_WORKER_DIRECTORY_NAME];
+	const entryWorker = isPrerender
+		? (workers[PRERENDER_WORKER_DIRECTORY_NAME] ?? defaultWorker)
+		: defaultWorker;
 	const auxiliaryWorkers = Object.entries(workers)
 		.filter(([directoryName]) => {
 			return (
 				directoryName !== DEFAULT_WORKER_DIRECTORY_NAME &&
-				directoryName !== "prerender"
+				directoryName !== PRERENDER_WORKER_DIRECTORY_NAME
 			);
 		})
 		.map(([_, worker]) => worker);
 
-	return [defaultWorker, ...auxiliaryWorkers].map((worker) =>
+	return [entryWorker, ...auxiliaryWorkers].map((worker) =>
 		toPreviewWorker(worker, settings)
 	);
 }

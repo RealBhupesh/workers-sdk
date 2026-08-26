@@ -41,7 +41,46 @@ describe("readBuildOutputWorkers", () => {
 			},
 		});
 
-		const result = await readBuildOutputWorkers("/project");
+		const result = await readBuildOutputWorkers("/project", false);
+
+		expect(result.map((worker) => worker.config.name)).toEqual([
+			"entry-worker",
+			"auxiliary-worker",
+		]);
+	});
+
+	test("replaces the default Worker while retaining auxiliary Workers during prerendering", async ({
+		expect,
+	}) => {
+		readBuildOutputMock.mockResolvedValue({
+			settings: undefined,
+			workers: {
+				default: createWorker("entry-worker"),
+				"auxiliary-worker": createWorker("auxiliary-worker"),
+				prerender: createWorker("prerender-worker"),
+			},
+		});
+
+		const result = await readBuildOutputWorkers("/project", true);
+
+		expect(result.map((worker) => worker.config.name)).toEqual([
+			"prerender-worker",
+			"auxiliary-worker",
+		]);
+	});
+
+	test("falls back to the default Worker when no prerender Worker exists", async ({
+		expect,
+	}) => {
+		readBuildOutputMock.mockResolvedValue({
+			settings: undefined,
+			workers: {
+				default: createWorker("entry-worker"),
+				"auxiliary-worker": createWorker("auxiliary-worker"),
+			},
+		});
+
+		const result = await readBuildOutputWorkers("/project", true);
 
 		expect(result.map((worker) => worker.config.name)).toEqual([
 			"entry-worker",
