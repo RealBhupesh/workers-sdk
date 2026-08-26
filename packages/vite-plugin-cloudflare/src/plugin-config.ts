@@ -448,8 +448,7 @@ export async function resolvePluginConfig(
 		});
 
 		prerenderWorkerEnvironmentName =
-			prerenderWorkerConfig?.viteEnvironment?.name ??
-			workerNameToEnvironmentName(workerResolvedConfig.config.name);
+			prerenderWorkerConfig?.viteEnvironment?.name ?? "prerender";
 
 		validateAndAddEnvironmentName(prerenderWorkerEnvironmentName);
 
@@ -505,8 +504,7 @@ export async function resolvePluginConfig(
 	}
 
 	const entryWorkerEnvironmentName =
-		pluginConfig.viteEnvironment?.name ??
-		workerNameToEnvironmentName(entryWorkerResolvedConfig.config.name);
+		pluginConfig.viteEnvironment?.name ?? "ssr";
 
 	validateAndAddEnvironmentName(entryWorkerEnvironmentName);
 
@@ -636,11 +634,6 @@ function addAuxiliaryWorkers(options: {
 			);
 		}
 	}
-}
-
-// Worker names can only contain alphanumeric characters and '-' whereas environment names can only contain alphanumeric characters and '$', '_'
-function workerNameToEnvironmentName(workerName: string) {
-	return workerName.replaceAll("-", "_");
 }
 
 const RESERVED_WORKER_EXPORT_NAMES = new Set(["default", "prerender"]);
