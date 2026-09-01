@@ -19,9 +19,7 @@ export default defineWorker({
 		},
 		IMAGES: { type: "images" },
 		WAE: { type: "analytics-engine-dataset", name: "test" },
-		// TODO: Reinstate when .env and .dev.vars files are supported with
-		// cloudflare.config.ts.
-		// HYPERDRIVE: { type: "hyperdrive", id: "test-hyperdrive-id" },
+		HYPERDRIVE: { type: "hyperdrive", id: "test-hyperdrive-id" },
 		RATE_LIMITER: {
 			type: "rate-limit",
 			namespace: "1001",
