@@ -1,5 +1,24 @@
 # miniflare
 
+## 5.20260902.0-alpha
+
+### Minor Changes
+
+- [#15401](https://github.com/cloudflare/workers-sdk/pull/15401) [`00a9f2f`](https://github.com/cloudflare/workers-sdk/commit/00a9f2f87bb1319ed96b41fe5d9be5503445d2c0) Thanks [@penalosa](https://github.com/penalosa)! - Allow Local Explorer storage APIs to access arbitrary local resource IDs
+
+  D1, KV and R2 operations now address Miniflare's internal storage services directly, so they no longer require configured bindings. Shared-storage sessions route these requests to the elected storage owner, and storage listings only aggregate peers in the same shared-storage scope.
+
+### Patch Changes
+
+- [#15469](https://github.com/cloudflare/workers-sdk/pull/15469) [`d40a634`](https://github.com/cloudflare/workers-sdk/commit/d40a634f970971bbcba01a8ac201fd3526b3e5fe) Thanks [@dependabot](https://github.com/apps/dependabot)! - Update dependencies of "miniflare", "wrangler"
+
+  The following dependency versions have been updated:
+
+  | Dependency                | From          | To            |
+  | ------------------------- | ------------- | ------------- |
+  | @cloudflare/workers-types | ^5.20260831.1 | ^5.20260902.1 |
+  | workerd                   | 1.20260831.1  | 1.20260902.1  |
+
 ## 5.20260831.0-alpha
 
 ### Minor Changes

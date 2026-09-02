@@ -1,5 +1,35 @@
 # wrangler
 
+## 4.129.0
+
+### Minor Changes
+
+- [#15460](https://github.com/cloudflare/workers-sdk/pull/15460) [`93d72a5`](https://github.com/cloudflare/workers-sdk/commit/93d72a5772cce74d9f5657d6989efe89cc10dfbb) Thanks [@QnJ1c2kNCg](https://github.com/QnJ1c2kNCg)! - Support gzip compression for JSON Pipelines sinks
+
+  Pipelines is in open beta. `wrangler pipelines sinks create` and the interactive setup flow now pass the selected JSON compression to the Pipelines API. JSON sinks accept `uncompressed` or `gzip`, while Parquet retains its existing compression options and `zstd` default.
+
+- [#15358](https://github.com/cloudflare/workers-sdk/pull/15358) [`d2d8eea`](https://github.com/cloudflare/workers-sdk/commit/d2d8eeaa4c49479c05b351471f870abab7d2c032) Thanks [@pombosilva](https://github.com/pombosilva)! - Add a `--json` flag to the `wrangler workflows` commands
+
+  Every `wrangler workflows` command now accepts `--json`, which emits the raw API payload instead of the human-readable rendering. The formatted output remains the default, so existing usage is unaffected:
+
+  `wrangler workflows instances list my-workflow --json`
+
+  The JSON output carries raw values rather than a serialisation of the formatted view: ISO timestamps instead of locale-formatted dates, plain status strings instead of emojified labels, and no presentation-only derived fields.
+
+### Patch Changes
+
+- [#15469](https://github.com/cloudflare/workers-sdk/pull/15469) [`d40a634`](https://github.com/cloudflare/workers-sdk/commit/d40a634f970971bbcba01a8ac201fd3526b3e5fe) Thanks [@dependabot](https://github.com/apps/dependabot)! - Update dependencies of "miniflare", "wrangler"
+
+  The following dependency versions have been updated:
+
+  | Dependency                | From          | To            |
+  | ------------------------- | ------------- | ------------- |
+  | @cloudflare/workers-types | ^5.20260831.1 | ^5.20260902.1 |
+  | workerd                   | 1.20260831.1  | 1.20260902.1  |
+
+- Updated dependencies [[`00a9f2f`](https://github.com/cloudflare/workers-sdk/commit/00a9f2f87bb1319ed96b41fe5d9be5503445d2c0), [`d40a634`](https://github.com/cloudflare/workers-sdk/commit/d40a634f970971bbcba01a8ac201fd3526b3e5fe)]:
+  - miniflare@5.20260902.0-alpha
+
 ## 4.128.0
 
 ### Minor Changes
