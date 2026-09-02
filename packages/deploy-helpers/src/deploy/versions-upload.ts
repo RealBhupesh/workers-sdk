@@ -6,6 +6,7 @@ import {
 	APIError,
 	formatTime,
 	getBindings,
+	getDurableObjectContainerApps,
 	ParseError,
 	printBindings,
 	retryOnAPIFailure,
@@ -22,6 +23,8 @@ import {
 	printBundleSize,
 	type BundleSize,
 } from "./helpers/bundle-reporter";
+import { addContainerImagesBinding } from "./helpers/container-image-bindings";
+import { getContainerMetadata } from "./helpers/container-metadata";
 import { createWorkerUploadForm } from "./helpers/create-worker-upload-form";
 import {
 	applyServiceAndEnvironmentTags,
@@ -55,7 +58,14 @@ import type { RetrieveSourceMapFunction } from "./helpers/sourcemap";
 import type { CfWorkerInit, Config } from "@cloudflare/workers-utils";
 import type { FormData } from "undici";
 
-export type VersionsUploadCallbacks = Pick<DeployCallbacks, "analyseBundle">;
+export type VersionsUploadCallbacks = Pick<DeployCallbacks, "analyseBundle"> &
+	Partial<
+		Pick<
+			DeployCallbacks,
+			| "prepareDurableObjectContainerApplications"
+			| "deployDurableObjectContainerApplications"
+		>
+	>;
 
 type VersionsUploadResult = {
 	versionId: string | null;
@@ -152,6 +162,12 @@ async function uploadWorkerVersion(
 		};
 	}
 
+	const preparedContainerImages =
+		await callbacks.prepareDurableObjectContainerApplications?.(config, {
+			dryRun: Boolean(props.dryRun),
+			scriptName,
+		});
+
 	// Resolve which Durable Object lifecycle payload to forward — either
 	// the legacy `migrations` steps or the declarative `exports` map. The
 	// server's versions POST controller persists `exports` on the new
@@ -188,6 +204,7 @@ async function uploadWorkerVersion(
 	}
 
 	addRequiredSecretsInheritBindings(config, bindings, { type: "upload" });
+	addContainerImagesBinding(config, bindings, preparedContainerImages ?? {});
 
 	const placement = parseConfigPlacement(config);
 
@@ -204,7 +221,7 @@ async function uploadWorkerVersion(
 		migrations,
 		exports,
 		modules,
-		containers: config.containers,
+		containers: getContainerMetadata(config, preparedContainerImages),
 		sourceMaps,
 		compatibility_date: compatibilityDate,
 		compatibility_flags: compatibilityFlags,
@@ -424,6 +441,17 @@ async function uploadWorkerVersion(
 		return { versionId, workerTag, bundleSize };
 	}
 	assert(accountId);
+	if (
+		getDurableObjectContainerApps(config.containers).length > 0 &&
+		callbacks.deployDurableObjectContainerApplications
+	) {
+		assert(versionId);
+		await callbacks.deployDurableObjectContainerApplications(config, {
+			versionId,
+			accountId,
+			scriptName,
+		});
+	}
 
 	const uploadMs = Date.now() - start;
 
