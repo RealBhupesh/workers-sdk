@@ -1156,6 +1156,45 @@ describe("init", () => {
 			});
 		});
 
+		it("should map D1 database IDs from dashboard", async ({ expect }) => {
+			worker = makeWorker({
+				bindings: [
+					{
+						type: "d1",
+						name: "DATABASE_ID_ONLY",
+						database_id: "database-id-only",
+					},
+					{
+						type: "d1",
+						name: "ID_ONLY",
+						id: "id-only",
+					},
+					{
+						type: "d1",
+						name: "BOTH",
+						database_id: "database-id",
+						id: "legacy-id",
+					},
+				],
+			});
+
+			await runWrangler(
+				"init --from-dash isolinear-optical-chip --no-delegate-c3"
+			);
+
+			expect(
+				JSON.parse(
+					fs.readFileSync("./isolinear-optical-chip/wrangler.jsonc", "utf8")
+				)
+			).toMatchObject({
+				d1_databases: [
+					{ binding: "DATABASE_ID_ONLY", database_id: "database-id-only" },
+					{ binding: "ID_ONLY", database_id: "id-only" },
+					{ binding: "BOTH", database_id: "database-id" },
+				],
+			});
+		});
+
 		it("should download source script from dashboard as plain JavaScript", async () => {
 			worker = makeWorker({ id: "isolinear-optical-chip" });
 
