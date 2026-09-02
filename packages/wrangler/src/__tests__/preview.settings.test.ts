@@ -699,6 +699,7 @@ describe("wrangler preview", () => {
 							previews: {
 								vars: { STAGE_ONLY: "stage" },
 								limits: { cpu_ms: 50 },
+								placement: { mode: "targeted", region: "WEU" },
 							},
 						},
 					},
@@ -736,7 +737,8 @@ describe("wrangler preview", () => {
 				"preview settings update --env staging --worker-name override-worker --skip-confirmation"
 			);
 			expect(patchRequestBody?.preview_defaults?.placement).toEqual({
-				mode: "smart",
+				mode: "targeted",
+				region: "WEU",
 			});
 			expect(patchRequestBody?.preview_defaults?.limits).toEqual({
 				cpu_ms: 50,

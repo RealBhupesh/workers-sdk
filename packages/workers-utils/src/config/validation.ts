@@ -5976,6 +5976,7 @@ const validatePreviewsConfig =
 				"logpush",
 				"observability",
 				"limits",
+				"placement",
 				"cache",
 			]) && isValid;
 
