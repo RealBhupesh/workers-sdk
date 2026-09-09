@@ -4,6 +4,7 @@ import * as path from "node:path";
 import MagicString from "magic-string";
 import * as vite from "vite";
 import { cleanUrl, createPlugin } from "../utils";
+import { shouldTrackAdditionalModule } from "./additional-module-tracking";
 
 /**
  * Plugin to support additional module types (`CompiledWasm`, `Data` and `Text`)
@@ -37,6 +38,16 @@ export const additionalModulesPlugin = createPlugin(
 
 					// Strip query params from the resolved path
 					const filePath = cleanUrl(resolved.id);
+
+					if (
+						!shouldTrackAdditionalModule(
+							filePath,
+							this.environment.config.root,
+							importer
+						)
+					) {
+						return resolved;
+					}
 
 					// Add the path to the additional module so that we can identify the module in the `hotUpdate` hook
 					additionalModulePaths.add(filePath);
